@@ -11,6 +11,7 @@ struct FlagButtonView: View {
     let imageName: String
     let action: () -> Void
     let borderColor: Color
+    let overlaySymbol: String? 
     
     // Keep these for later activation
     let rotation: Double
@@ -19,26 +20,29 @@ struct FlagButtonView: View {
     
     var body: some View {
         Button(action: action) {
-            Image(imageName)
-                // Optional sizing (uncomment if needed for consistency)
-                //.resizable()
-                //.frame(width: 200, height: 100)
+            ZStack {
+                Image(imageName)
+                    .clipShape(Capsule())
+                    .overlay(alignment: .center) {
+                        Capsule()
+                            .stroke(borderColor, lineWidth: 4)
+                            .opacity(borderColor == .clear ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.2), value: borderColor)
+                    }
+                    .shadow(radius: 5)
                 
-                .clipShape(Capsule())
-                
-                .overlay(alignment: .center) {
-                    Capsule()
-                        .stroke(borderColor, lineWidth: 4)
-                        .opacity(borderColor == .clear ? 0 : 1)
-                        .animation(.easeInOut(duration: 0.2), value: borderColor)
+                if let symbol = overlaySymbol {
+                    Text(symbol)
+                        .font(.system(size: 40))
+                        .shadow(radius: 2)
+                        .transition(.scale.combined(with: .opacity))
+                        .animation(.easeInOut, value: symbol)
                 }
-                
-                .shadow(radius: 5)
-                
-                // Optional effects for later testing
-                //.rotation3DEffect(.degrees(rotation), axis: (x: 0, y: 1, z: 0))
-                //.opacity(opacity)
-                //.scaleEffect(scale)
+            }
+            // Optional effects for later testing
+            //.rotation3DEffect(.degrees(rotation), axis: (x: 0, y: 1, z: 0))
+            //.opacity(opacity)
+            //.scaleEffect(scale)
         }
     }
 }

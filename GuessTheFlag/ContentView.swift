@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var questionsAsked = 0
     @State private var gameOver = false
     
+    @State private var overlaySymbols = [String?](repeating: nil, count: 3)
     @State private var feedbackText: String = ""
     
     @State private var borderColors = [Color](repeating: .clear, count: 3)
@@ -56,6 +57,7 @@ struct ContentView: View {
                             imageName: countries[number],
                             action: { flagTapped(number) },
                             borderColor: borderColors[number],
+                            overlaySymbol: overlaySymbols[number],
                             rotation: 0,//animationAmount[number],  // Inactive
                             opacity: 1.0,//opacityAmount[number],     // Inactive
                             scale: 1.0//scaleAmount[number]          // Inactive
@@ -77,11 +79,6 @@ struct ContentView: View {
                     Text(feedbackText)
                         .foregroundStyle(.white)
                         .font(.headline)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(minHeight: UIFont.preferredFont(
-                            forTextStyle: .headline).lineHeight * 2)
                         .padding(.top, 10)
                 }
                 Spacer()
@@ -101,36 +98,47 @@ struct ContentView: View {
     
     func flagTapped(_ number: Int) {
         for i in 0..<3 {
-            if i == correctAnswer {
-                borderColors[i] = .green
-            } else if i == number {
-                borderColors[i] = .red
+            if i == number {
+                if i == correctAnswer {
+                    borderColors[i] = .green
+                    overlaySymbols[i] = "✅"
+                } else {
+                    borderColors[i] = .red
+                    overlaySymbols[i] = "❌"
+                }
             } else {
                 borderColors[i] = .clear
+                overlaySymbols[i] = nil
             }
         }
+        
         if number == correctAnswer {
             score += 1
             feedbackText = "✅ Correct!"
             giveHapticFeedback(correct: true)
         } else {
-            feedbackText = "Wrong! 🫩 That was the flag of \(countries[correctAnswer])"
+            feedbackText = "🫩 Wrong!"
             giveHapticFeedback(correct: false)
         }
         
         questionsAsked += 1
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
-            if questionsAsked == numberOfQuestions {
-                gameOver = true
-            } else {
+        
+        if questionsAsked == numberOfQuestions {
+            gameOver = true
+        } else {
+            // Delay next question
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 askQuestion()
             }
         }
     }
+
     
     func askQuestion() {
         // clear colored borders
         borderColors = [Color](repeating: .clear, count: 3)
+        overlaySymbols = [String?](repeating: nil, count: 3)
+        feedbackText = ""
 //        withAnimation {
 //                // Apply outgoing animation
 //                for i in 0..<3 {
@@ -144,7 +152,6 @@ struct ContentView: View {
 //        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             countries.shuffle()
             correctAnswer = Int.random(in: 0...2)
-            feedbackText = ""
 
 //            withAnimation {
 //                // Bring flags back in
