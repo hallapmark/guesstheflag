@@ -10,13 +10,14 @@ import SwiftUI
 struct FlagButtonView: View {
     let imageName: String
     let action: () -> Void
+    
+    // Feedback (e.g. green border, green checkmark overlayed)
     let borderColor: Color
     let overlaySymbol: String? 
     
-    // Keep these for later activation
-    let rotation: Double
+    // Ease-in, ease-out
+    let offset: CGFloat
     let opacity: Double
-    let scale: CGFloat
     
     var body: some View {
         Button(action: action) {
@@ -30,6 +31,8 @@ struct FlagButtonView: View {
                             .animation(.easeInOut(duration: 0.2), value: borderColor)
                     }
                     .shadow(radius: 5)
+                    .offset(x: offset)
+                    .opacity(opacity)
                 
                 if let symbol = overlaySymbol {
                     Text(symbol)
@@ -39,10 +42,6 @@ struct FlagButtonView: View {
                         .animation(.easeInOut, value: symbol)
                 }
             }
-            // Optional effects for later testing
-            //.rotation3DEffect(.degrees(rotation), axis: (x: 0, y: 1, z: 0))
-            //.opacity(opacity)
-            //.scaleEffect(scale)
         }
     }
 }

@@ -23,9 +23,8 @@ struct ContentView: View {
     
     @State private var borderColors = [Color](repeating: .clear, count: 3)
     
-//    @State private var animationAmount = [0.0, 0.0, 0.0]
-//    @State private var opacityAmount = [1.0, 1.0, 1.0]
-//    @State private var scaleAmount = [1.0, 1.0, 1.0]
+    @State private var opacityAmount = [1.0, 1.0, 1.0]
+    @State private var offsetAmount = [CGFloat](repeating: 0, count: 3)
     
     var body: some View {
         ZStack {
@@ -58,9 +57,8 @@ struct ContentView: View {
                             action: { flagTapped(number) },
                             borderColor: borderColors[number],
                             overlaySymbol: overlaySymbols[number],
-                            rotation: 0,//animationAmount[number],  // Inactive
-                            opacity: 1.0,//opacityAmount[number],     // Inactive
-                            scale: 1.0//scaleAmount[number]          // Inactive
+                            offset: offsetAmount[number],
+                            opacity: opacityAmount[number]
                         )
                     }
                 }
@@ -96,71 +94,63 @@ struct ContentView: View {
         }
     }
     
-    func flagTapped(_ number: Int) {
-        for i in 0..<3 {
-            if i == number {
-                if i == correctAnswer {
-                    borderColors[i] = .green
-                    overlaySymbols[i] = "✅"
-                } else {
-                    borderColors[i] = .red
-                    overlaySymbols[i] = "❌"
-                }
-            } else {
-                borderColors[i] = .clear
-                overlaySymbols[i] = nil
-            }
-        }
-        
-        if number == correctAnswer {
+    private func flagTapped(_ number: Int) {
+        let correct = number == correctAnswer
+        if correct {
             score += 1
-            feedbackText = "✅ Correct!"
-            giveHapticFeedback(correct: true)
-        } else {
-            feedbackText = "🫩 Wrong!"
-            giveHapticFeedback(correct: false)
         }
+        provideFeedbackForTapped(number: number, correct: correct)
         
-        questionsAsked += 1
-        
-        if questionsAsked == numberOfQuestions {
-            gameOver = true
-        } else {
-            // Delay next question
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                askQuestion()
+        // Delay flag fly-out to allow symbol animation to complete
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            borderColors = [Color](repeating: .clear, count: 3)
+            overlaySymbols = [String?](repeating: nil, count: 3)
+            withAnimation(.easeIn(duration: 0.7)) {
+                for i in 0..<3 {
+                    offsetAmount[i] = -300 // flags fly away, left
+                    opacityAmount[i] = 0.0
+                }
+            } completion: { // ease in new question
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    questionsAsked += 1
+                    if questionsAsked == numberOfQuestions {
+                        gameOver = true
+                    } else {
+                        askQuestion()
+                    }
+                }
             }
         }
     }
-
+    
+    private func provideFeedbackForTapped(number: Int, correct: Bool) {
+        startFeedbackAnimationForTapped(number: number, correct: correct)
+        setFeedbackTextForTapped(number: number, correct: correct)
+        giveHapticFeedback(correct: correct)
+    }
+    
+    private func startFeedbackAnimationForTapped(number i: Int, correct: Bool) {
+        borderColors[i] = correct ? .green : .red
+        overlaySymbols[i] = correct ? "✅" : "❌"
+    }
+    
+    private func setFeedbackTextForTapped(number i: Int, correct: Bool) {
+        feedbackText = correct ? "✅ Correct!" : "🫩 Wrong!"
+    }
     
     func askQuestion() {
-        // clear colored borders
-        borderColors = [Color](repeating: .clear, count: 3)
-        overlaySymbols = [String?](repeating: nil, count: 3)
         feedbackText = ""
-//        withAnimation {
-//                // Apply outgoing animation
-//                for i in 0..<3 {
-//                    animationAmount[i] += 360
-//                    opacityAmount[i] = 0.0
-//                    scaleAmount[i] = 0.5
-//                }
-//            }
-        
-        // Delay the reshuffle slightly to allow outgoing animation to complete
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            countries.shuffle()
-            correctAnswer = Int.random(in: 0...2)
-
-//            withAnimation {
-//                // Bring flags back in
-//                for i in 0..<3 {
-//                    opacityAmount[i] = 1.0
-//                    scaleAmount[i] = 1.0
-//                }
-//            }
-//        }
+        countries.shuffle()
+        correctAnswer = Int.random(in: 0...2)
+        // Reset offsets and fade in
+        for i in 0..<3 {
+            offsetAmount[i] = 0
+        }
+        withAnimation(.easeIn(duration: 0.9)) {
+            for i in 0..<3 {
+                opacityAmount[i] = 1.0
+            }
+        }
     }
     
     func restartGame() {
