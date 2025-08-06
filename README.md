@@ -11,3 +11,12 @@ Video (~30s):
 
 https://github.com/user-attachments/assets/c86b2520-1561-421e-8892-3d5540c3cde8
 
+# Installation
+
+This in-develompent app can be previewed in Xcode if you have a Mac and an iPhone (alternatively, it can be run using Xcode's built-in iPhone simulators).
+
+Clone or download the repository.
+Open GuessTheFlag in Xcode.
+Connect your iPhone to Mac.
+In Xcode, set your iPhone as the target and run the app. If you haven't run in-development apps on your phone before, you might have to allow the connection in your iPhone under Settings -> General -> VPN & Device Management.
+
