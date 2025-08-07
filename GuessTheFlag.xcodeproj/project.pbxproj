@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3D7054F62E44AC6E009055AA /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 3D7054F52E44AC6E009055AA /* GRDB */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		3D18A1592E32449E00AFD855 /* GuessTheFlag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GuessTheFlag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D7054F62E44AC6E009055AA /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = GuessTheFlag;
 			packageProductDependencies = (
+				3D7054F52E44AC6E009055AA /* GRDB */,
 			);
 			productName = GuessTheFlag;
 			productReference = 3D18A1592E32449E00AFD855 /* GuessTheFlag.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 3D18A1502E32449E00AFD855;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3D7054F42E44AC6E009055AA /* XCRemoteSwiftPackageReference "GRDB" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3D18A15A2E32449E00AFD855 /* Products */;
 			projectDirPath = "";
@@ -324,6 +333,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3D7054F42E44AC6E009055AA /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.6.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3D7054F52E44AC6E009055AA /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D7054F42E44AC6E009055AA /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3D18A1512E32449E00AFD855 /* Project object */;
 }
