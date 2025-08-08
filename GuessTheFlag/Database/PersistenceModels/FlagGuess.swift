@@ -8,10 +8,10 @@ import GRDB
 
 // Entity model – 1-on-1 mapping to SQL schema (see Migrator)
 struct FlagGuess: Identifiable, Codable {
-    var id: Int64?
+    var id: Int64? = nil
     var country: String
     var wasCorrect: Bool
-    var sessionId: Int64
+    var gameSessionId: Int64 // links to GameSession
 }
 
 extension FlagGuess: FetchableRecord, PersistableRecord { }

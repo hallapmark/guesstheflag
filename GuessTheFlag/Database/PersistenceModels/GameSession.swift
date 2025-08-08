@@ -9,7 +9,7 @@ import Foundation
 
 // Entity model – 1-on-1 mapping to the SQL schema (see Migrator)
 struct GameSession: Identifiable, Codable {
-    var id: Int64?
+    var id: Int64? = nil
     var date: Date
     var score: Int
 }
