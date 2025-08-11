@@ -24,15 +24,36 @@ struct LocalDatabase {
     }
     
     // MARK: WRITE
-    func saveGameSession(_ session: GameSession) throws {
+    func saveGameSession(_ session: GameSession) throws -> GameSession {
         try writer.write { db in
-            try session.insert(db)
+            var mutableSession = session
+            try mutableSession.insert(db)
+            guard let _ = mutableSession.id else {
+                throw DatabaseError(message: "Failed to get inserted GameSession id")
+            }
+            return mutableSession
         }
     }
     
+    func updateGameSession(_ session: GameSession) throws {
+        try writer.write { db in
+            try session.update(db)
+        }
+    }
+
     func saveFlagGuess(_ guess: FlagGuess) throws {
         try writer.write { db in
             try guess.insert(db)
+        }
+    }
+    
+    /// Saves multiple guesses in a single transaction
+    func saveFlagGuesses(_ guesses: [FlagGuess]) throws {
+        guard !guesses.isEmpty else { return }
+        try writer.write { db in
+            for guess in guesses {
+                try guess.insert(db)
+            }
         }
     }
     
