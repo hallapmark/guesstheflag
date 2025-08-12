@@ -1,7 +1,6 @@
-# Guess the Flag (in-development)
+# Guess the Flag
 A relaxing, visually-driven iOS game built with SwiftUI.
-The user is prompted with a question such as "Tap the flag of Italy!" and must select the correct flag from three options. After each selection, they receive immediate feedback, and the game then continues with a new question. At the end of the round, the user sees a total score.
-Built using SwiftUI, the game features simple animations, haptic feedback, and a focus on clarity and accessibility.
+The user is prompted with a question such as "Tap the flag of Italy!" and must select the correct flag. The game then provides visual and haptic feedback. At the end of a round of questions, the user sees a modal with a total score and some stats comparing performance with the previous round.
 
 Screenshot:
 
@@ -9,7 +8,11 @@ Screenshot:
 
 Video (~30s):
 
-https://github.com/user-attachments/assets/c86b2520-1561-421e-8892-3d5540c3cde8
+
+
+https://github.com/user-attachments/assets/e328bec7-ab4f-471e-a0b3-c85a0eab308f
+
+
 
 # Installation
 
