@@ -10,17 +10,15 @@ import Combine
 
 @MainActor
 class GameViewModel: ObservableObject {
-    let numberOfQuestions = 6
+    let numberOfQuestions = 7
     
     let db = LocalDatabase.shared
     
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published properties that affect the UI
-    @Published var isLoadingSession = true
-    
-    // DB session - reset when starting new round
-    @Published var session: GameSession?
+    @Published var isLoadingNewSession = true
+    @Published var currentSession: GameSession? // DB session - reset when starting new round
     
     @Published var countries: [String] = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
     @Published var correctAnswer: Int = Int.random(in: 0...2)
@@ -38,10 +36,12 @@ class GameViewModel: ObservableObject {
     @Published var opacityAmount = [1.0, 1.0, 1.0]
     @Published var offsetAmount = [CGFloat](repeating: 0, count: 3)
     
+    @Published var previousSessionScore: Int? = nil
+    @Published var showStatsModal = false
+    
     // MARK: - Published properties for DB
     @Published private(set) var flagGuesses: [FlagGuess] = []
     
-    // MARK: - Public interface
     func flagTapped(_ number: Int) {
         guard !gameOver else { return }
         guard canTapFlag else { return } // Prevent multiple taps during animation
@@ -53,7 +53,7 @@ class GameViewModel: ObservableObject {
         }
         
         // Append guess with current session ID
-        if let sessionId = session?.id {
+        if let sessionId = currentSession?.id {
             let guess = FlagGuess(
                 id: nil,
                 country: countries[number],
@@ -81,7 +81,10 @@ class GameViewModel: ObservableObject {
                     // runs when needed.
                     self.questionsAsked += 1
                     if self.questionsAsked == self.numberOfQuestions {
-                        self.handleGameOver()
+                        self.gameOver = true
+                        Task {
+                            await self.handleGameOver()
+                        }
                     } else {
                         self.askQuestion()
                     }
@@ -126,21 +129,30 @@ class GameViewModel: ObservableObject {
         canTapFlag = true // Allow taps again
     }
     
-    func handleGameOver() {
-        self.gameOver = true
-        guard var currentSession = session else { return }
-        currentSession.score = score
-        let guessesToSave = flagGuesses
+    func handleGameOver() async {
+        guard var currentSession = currentSession else { return }
         
-        DispatchQueue.global(qos: .userInitiated).async {
-            // self is kept strong here, we want to guarantee that the db save happens
-            self.saveSessionAndGuesses(session: currentSession, flagGuesses: guessesToSave)
+        currentSession.score = score
+        
+        // Fire-and-forget save. We won't immediately need this for the
+        // game over modal,but we do want the session data to be saved to the db
+        // so that it can be retrieved after the NEXT round finishes.
+        let guessesToSave = flagGuesses
+        Task.detached(priority: .userInitiated) {
+            self.saveSessionAndGuesses(
+                session: currentSession,
+                flagGuesses: guessesToSave
+            )
         }
+        
+        await fetchPreviousSession() // needed for the modal for comparison stats
+        self.showStatsModal = true
     }
     
     func restartGame() {
         flagGuesses = []
         gameOver = false
+        showStatsModal = false
         questionsAsked = 0
         score = 0
         createNewSession()
@@ -161,7 +173,7 @@ class GameViewModel: ObservableObject {
     
     func createNewSession() {
         // Creates a new DB session.
-        isLoadingSession = true
+        isLoadingNewSession = true
         let newSession = GameSession(id: nil, date: Date(), score: 0)
         
         Just(newSession)
@@ -174,14 +186,32 @@ class GameViewModel: ObservableObject {
                 if case .failure(let error) = completion {
                     print("Error creating session: \(error)")
                 }
-                self?.isLoadingSession = false
+                self?.isLoadingNewSession = false
             }, receiveValue: { [weak self] savedSession in
-                self?.session = savedSession
+                self?.currentSession = savedSession
                 if let id = savedSession.id {
                     print("Session created with id: \(id)")
                 }
                 self?.askQuestion()
             })
             .store(in: &cancellables)
+    }
+    
+    func fetchPreviousSession() async {
+        guard let currentSessionId = currentSession?.id else { return }
+        
+        do {
+            // Run the DB call on a background thread
+            let previous = try await Task.detached(priority: .userInitiated) {
+                return try self.db.fetchPreviousGameSession(currentSessionId: currentSessionId)
+            }.value
+            
+            // Update UI on the main actor
+            await MainActor.run {
+                self.previousSessionScore = previous?.score
+            }
+        } catch {
+            print("Failed to fetch previous session: \(error)")
+        }
     }
 }

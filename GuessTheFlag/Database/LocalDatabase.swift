@@ -63,16 +63,25 @@ struct LocalDatabase {
             try GameSession.fetchAll(db)
         }
     }
-    
-    func readAllFlagGuesses() throws -> [FlagGuess] {
-        try writer.read { db in
-            try FlagGuess.fetchAll(db)
-        }
-    }
 
     func readFirstGameSession() throws -> GameSession? {
         try writer.read { db in
             try GameSession.fetchOne(db)
+        }
+    }
+    
+    func fetchPreviousGameSession(currentSessionId: Int64) throws -> GameSession? {
+        try writer.read { db in
+            try GameSession
+                .filter(Column("id") < currentSessionId)
+                .order(Column("id").desc)
+                .fetchOne(db)
+        }
+    }
+    
+    func readAllFlagGuesses() throws -> [FlagGuess] {
+        try writer.read { db in
+            try FlagGuess.fetchAll(db)
         }
     }
     

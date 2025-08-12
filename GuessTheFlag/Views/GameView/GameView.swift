@@ -12,11 +12,11 @@ struct GameView: View {
     
     var body: some View {
         ZStack {
-            if viewModel.isLoadingSession {
+            if viewModel.isLoadingNewSession {
                 loadingView
             } else {
                 GameContentView(viewModel: viewModel)
-                    .disabled(viewModel.session == nil)
+                    .disabled(viewModel.currentSession == nil)
             }
         }
         .onAppear {

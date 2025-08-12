@@ -71,10 +71,13 @@ struct GameContentView: View {
             }
             .padding()
         }
-        .alert("Game finished!", isPresented: $viewModel.gameOver) {
-            Button("Restart game", action: viewModel.restartGame)
-        } message: {
-            Text("Your final score is: \(viewModel.score)/\(viewModel.questionsAsked).")
+        .sheet(isPresented: $viewModel.showStatsModal) {
+            GameOverStatsView(
+                currentScore: viewModel.score,
+                questionsAsked: viewModel.questionsAsked,
+                previousScore: viewModel.previousSessionScore,
+                onRestart: viewModel.restartGame
+            )
         }
     }
 }
