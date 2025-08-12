@@ -6,8 +6,23 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3D7054F62E44AC6E009055AA /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 3D7054F52E44AC6E009055AA /* GRDB */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3D70555C2E4630B6009055AA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3D18A1512E32449E00AFD855 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3D18A1582E32449E00AFD855;
+			remoteInfo = GuessTheFlag;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		3D18A1592E32449E00AFD855 /* GuessTheFlag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GuessTheFlag.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D7055582E4630B6009055AA /* GuessTheFlagTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GuessTheFlagTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +31,23 @@
 			path = GuessTheFlag;
 			sourceTree = "<group>";
 		};
+		3D7055592E4630B6009055AA /* GuessTheFlagTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = GuessTheFlagTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		3D18A1562E32449E00AFD855 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D7054F62E44AC6E009055AA /* GRDB in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3D7055552E4630B6009055AA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				3D18A15B2E32449E00AFD855 /* GuessTheFlag */,
+				3D7055592E4630B6009055AA /* GuessTheFlagTests */,
 				3D18A15A2E32449E00AFD855 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				3D18A1592E32449E00AFD855 /* GuessTheFlag.app */,
+				3D7055582E4630B6009055AA /* GuessTheFlagTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -65,10 +95,34 @@
 			);
 			name = GuessTheFlag;
 			packageProductDependencies = (
+				3D7054F52E44AC6E009055AA /* GRDB */,
 			);
 			productName = GuessTheFlag;
 			productReference = 3D18A1592E32449E00AFD855 /* GuessTheFlag.app */;
 			productType = "com.apple.product-type.application";
+		};
+		3D7055572E4630B6009055AA /* GuessTheFlagTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3D70555E2E4630B6009055AA /* Build configuration list for PBXNativeTarget "GuessTheFlagTests" */;
+			buildPhases = (
+				3D7055542E4630B6009055AA /* Sources */,
+				3D7055552E4630B6009055AA /* Frameworks */,
+				3D7055562E4630B6009055AA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3D70555D2E4630B6009055AA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3D7055592E4630B6009055AA /* GuessTheFlagTests */,
+			);
+			name = GuessTheFlagTests;
+			packageProductDependencies = (
+			);
+			productName = GuessTheFlagTests;
+			productReference = 3D7055582E4630B6009055AA /* GuessTheFlagTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -83,6 +137,10 @@
 					3D18A1582E32449E00AFD855 = {
 						CreatedOnToolsVersion = 16.4;
 					};
+					3D7055572E4630B6009055AA = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 3D18A1582E32449E00AFD855;
+					};
 				};
 			};
 			buildConfigurationList = 3D18A1542E32449E00AFD855 /* Build configuration list for PBXProject "GuessTheFlag" */;
@@ -94,18 +152,29 @@
 			);
 			mainGroup = 3D18A1502E32449E00AFD855;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3D7054F42E44AC6E009055AA /* XCRemoteSwiftPackageReference "GRDB" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3D18A15A2E32449E00AFD855 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				3D18A1582E32449E00AFD855 /* GuessTheFlag */,
+				3D7055572E4630B6009055AA /* GuessTheFlagTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		3D18A1572E32449E00AFD855 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3D7055562E4630B6009055AA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +191,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3D7055542E4630B6009055AA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3D70555D2E4630B6009055AA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3D18A1582E32449E00AFD855 /* GuessTheFlag */;
+			targetProxy = 3D70555C2E4630B6009055AA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		3D18A1622E3244A000AFD855 /* Debug */ = {
@@ -302,6 +386,42 @@
 			};
 			name = Release;
 		};
+		3D70555F2E4630B6009055AA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KEP4SFNQ52;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tartuvaim.GuessTheFlagTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GuessTheFlag.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GuessTheFlag";
+			};
+			name = Debug;
+		};
+		3D7055602E4630B6009055AA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KEP4SFNQ52;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tartuvaim.GuessTheFlagTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GuessTheFlag.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GuessTheFlag";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -323,7 +443,35 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		3D70555E2E4630B6009055AA /* Build configuration list for PBXNativeTarget "GuessTheFlagTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3D70555F2E4630B6009055AA /* Debug */,
+				3D7055602E4630B6009055AA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3D7054F42E44AC6E009055AA /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.6.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3D7054F52E44AC6E009055AA /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D7054F42E44AC6E009055AA /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3D18A1512E32449E00AFD855 /* Project object */;
 }
