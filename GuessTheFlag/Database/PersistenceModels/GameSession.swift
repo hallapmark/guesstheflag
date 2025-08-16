@@ -15,6 +15,7 @@ struct GameSession: Codable {
     var id: Int64? = nil
     var date: Date
     var score: Int
+    var completed: Bool = false
 }
 
 extension GameSession: FetchableRecord, MutablePersistableRecord {
@@ -32,5 +33,3 @@ extension GameSession: TableRecord {
         request(for: GameSession.flagGuesses)
     }
 }
-
-

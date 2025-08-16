@@ -25,6 +25,7 @@ extension LocalDatabase {
                 t.autoIncrementedPrimaryKey("id")
                 t.column("date", .datetime).notNull()
                 t.column("score", .integer).notNull()
+                t.column("completed", .boolean).notNull().defaults(to: false)
             }
 
             try db.create(table: FLAG_GUESS) { t in

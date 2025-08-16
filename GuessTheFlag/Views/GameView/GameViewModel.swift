@@ -8,8 +8,21 @@
 import SwiftUI
 import Combine
 
+let COUNTRIES = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"]
+
+struct GameDBError: Error {
+    let message: String
+}
+
+// In-memory guess model for the current round
+struct InMemoryFlagGuess {
+    let country: String
+    let wasCorrect: Bool
+}
+
 @MainActor
 class GameViewModel: ObservableObject {
+    
     let numberOfQuestions = 7
     
     let db = LocalDatabase.shared
@@ -17,18 +30,19 @@ class GameViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published properties that affect the UI
-    @Published var isLoadingNewSession = true
-    @Published var currentSession: GameSession? // DB session - reset when starting new round
-    
-    @Published var countries: [String] = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
+    @Published var countries: [String] = COUNTRIES.shuffled()
     @Published var correctAnswer: Int = Int.random(in: 0...2)
     
     // Reset when starting new round --->
-    @Published var score = 0
     @Published var questionsAsked = 0
+    @Published var score = 0
     @Published var gameOver = false
-    @Published var canTapFlag = true
+    @Published var showStatsModal = false
+    // In-memory guesses for the current game session (saved to db at game over)
+    private(set) var flagGuesses: [InMemoryFlagGuess] = []
     // <--- Reset when starting new round
+    
+    @Published var canTapFlag = true
     
     @Published var overlaySymbols = [String?](repeating: nil, count: 3)
     @Published var feedbackText = ""
@@ -37,10 +51,6 @@ class GameViewModel: ObservableObject {
     @Published var offsetAmount = [CGFloat](repeating: 0, count: 3)
     
     @Published var previousSessionScore: Int? = nil
-    @Published var showStatsModal = false
-    
-    // MARK: - Published properties for DB
-    @Published private(set) var flagGuesses: [FlagGuess] = []
     
     func flagTapped(_ number: Int) {
         guard !gameOver else { return }
@@ -51,18 +61,12 @@ class GameViewModel: ObservableObject {
         if correct {
             score += 1
         }
-        
-        // Append guess with current session ID
-        if let sessionId = currentSession?.id {
-            let guess = FlagGuess(
-                id: nil,
-                country: countries[number],
-                wasCorrect: correct,
-                gameSessionId: sessionId
-            )
-            flagGuesses.append(guess)
-        } // We save to memory. We only save to the DB at the end of the round.
-        // Information on incomplete rounds is abandoned.
+        // Save guess in memory (no sessionId yet)
+        let guess = InMemoryFlagGuess(
+            country: countries[number],
+            wasCorrect: correct
+        )
+        flagGuesses.append(guess)
         
         provideFeedbackForTapped(number: number, correct: correct)
         
@@ -82,9 +86,7 @@ class GameViewModel: ObservableObject {
                     self.questionsAsked += 1
                     if self.questionsAsked == self.numberOfQuestions {
                         self.gameOver = true
-                        Task {
-                            await self.handleGameOver()
-                        }
+                        self.handleGameOver()
                     } else {
                         self.askQuestion()
                     }
@@ -129,33 +131,62 @@ class GameViewModel: ObservableObject {
         canTapFlag = true // Allow taps again
     }
     
-    func handleGameOver() async {
-        guard var currentSession = currentSession else { return }
-        
-        currentSession.score = score
-        
-        // Fire-and-forget save. We won't immediately need this for the
-        // game over modal,but we do want the session data to be saved to the db
-        // so that it can be retrieved after the NEXT round finishes.
-        let guessesToSave = flagGuesses
-        Task.detached(priority: .userInitiated) {
-            self.saveSessionAndGuesses(
-                session: currentSession,
-                flagGuesses: guessesToSave
-            )
-        }
-        
-        await fetchPreviousSession() // needed for the modal for comparison stats
-        self.showStatsModal = true
+    func handleGameOver() {
+        // Create a new completed session at game over
+        let session = GameSession(id: nil, date: Date(), score: score, completed: true)
+        Just(session)
+            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+            .tryMap { [self] session -> Int64 in // strong self to guarantee db save
+                let savedSession = try db.saveGameSession(session)
+                guard let savedSessionId = savedSession.id else {
+                    throw GameDBError(message: "Failed to get saved session id")
+                }
+                // Map in-memory guesses to DB guesses with session id
+                let guessesToSave = flagGuesses.map { guess in
+                    FlagGuess(id: nil, country: guess.country, wasCorrect: guess.wasCorrect, gameSessionId: savedSessionId)
+                }
+                try db.saveFlagGuesses(guessesToSave)
+                return savedSessionId
+            }
+            .flatMap { [weak self] (savedSessionId: Int64) in
+                Future<Int?, Error> { promise in
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        do {
+                            let previous = try self?.db.fetchPreviousGameSession(currentSessionId: savedSessionId)
+                            promise(.success(previous?.score))
+                        } catch {
+                            promise(.failure(error))
+                        }
+                    }
+                }
+            }
+            .receive(on: DispatchQueue.main) // UI
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else {
+                    return
+                }
+                if case .failure(let error) = completion {
+                    print("Failed to save session or guesses: \(error)")
+                }
+                self.showStatsModal = true
+            }, receiveValue: { [weak self] previousScore in
+                self?.previousSessionScore = previousScore
+            })
+            .store(in: &cancellables)
     }
     
     func restartGame() {
-        flagGuesses = []
-        gameOver = false
-        showStatsModal = false
+        // reset progress and state
         questionsAsked = 0
         score = 0
-        createNewSession()
+        gameOver = false
+        showStatsModal = false
+        flagGuesses = []
+        
+        overlaySymbols = [String?](repeating: nil, count: 3)
+        borderColors = [Color](repeating: .clear, count: 3)
+        
+        askQuestion()
     }
     
     // Update session and save guesses to DB
@@ -171,42 +202,12 @@ class GameViewModel: ObservableObject {
         }
     }
     
-    func createNewSession() {
-        // Creates a new DB session.
-        isLoadingNewSession = true
-        let newSession = GameSession(id: nil, date: Date(), score: 0)
-        
-        Just(newSession)
-            .subscribe(on: DispatchQueue.global(qos: .userInitiated)) // background insert
-            .tryMap { [db] session in
-                return try db.saveGameSession(session) // returns GameSession with id
-            }
-            .receive(on: DispatchQueue.main) // back to UI
-            .sink(receiveCompletion: { [weak self] completion in
-                if case .failure(let error) = completion {
-                    print("Error creating session: \(error)")
-                }
-                self?.isLoadingNewSession = false
-            }, receiveValue: { [weak self] savedSession in
-                self?.currentSession = savedSession
-                if let id = savedSession.id {
-                    print("Session created with id: \(id)")
-                }
-                self?.askQuestion()
-            })
-            .store(in: &cancellables)
-    }
-    
-    func fetchPreviousSession() async {
-        guard let currentSessionId = currentSession?.id else { return }
-        
+    // Fetch previous session for stats modal
+    func fetchPreviousSession(currentSessionId: Int64) async {
         do {
-            // Run the DB call on a background thread
             let previous = try await Task.detached(priority: .userInitiated) {
                 return try self.db.fetchPreviousGameSession(currentSessionId: currentSessionId)
             }.value
-            
-            // Update UI on the main actor
             await MainActor.run {
                 self.previousSessionScore = previous?.score
             }

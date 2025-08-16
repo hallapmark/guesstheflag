@@ -11,27 +11,10 @@ struct GameView: View {
     @StateObject private var viewModel = GameViewModel()
     
     var body: some View {
-        ZStack {
-            if viewModel.isLoadingNewSession {
-                loadingView
-            } else {
-                GameContentView(viewModel: viewModel)
-                    .disabled(viewModel.currentSession == nil)
+        GameContentView(viewModel: viewModel)
+            .onAppear {
+                viewModel.askQuestion()
             }
-        }
-        .onAppear {
-            viewModel.createNewSession()
-        }
-    }
-    
-    private var loadingView: some View {
-        ZStack {
-            BackgroundGradient()
-            
-            ProgressView("Starting Game...")
-                .font(.title2)
-                .foregroundStyle(.white)
-        }
     }
 }
 

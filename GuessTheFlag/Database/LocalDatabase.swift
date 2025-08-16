@@ -74,6 +74,7 @@ struct LocalDatabase {
         try writer.read { db in
             try GameSession
                 .filter(Column("id") < currentSessionId)
+                .filter(Column("completed") == true)
                 .order(Column("id").desc)
                 .fetchOne(db)
         }
