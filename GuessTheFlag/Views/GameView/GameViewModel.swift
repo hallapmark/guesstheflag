@@ -25,8 +25,6 @@ class GameViewModel: ObservableObject {
     
     let numberOfQuestions = 7
     
-    let db = LocalDatabase.shared
-    
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Published properties that affect the UI
@@ -86,7 +84,7 @@ class GameViewModel: ObservableObject {
                     self.questionsAsked += 1
                     if self.questionsAsked == self.numberOfQuestions {
                         self.gameOver = true
-                        self.handleGameOver()
+                        Task { await self.handleGameOver() }
                     } else {
                         self.askQuestion()
                     }
@@ -131,12 +129,14 @@ class GameViewModel: ObservableObject {
         canTapFlag = true // Allow taps again
     }
     
-    func handleGameOver() {
-        // Create a new completed session at game over
+    func handleGameOver() async {
         let session = GameSession(id: nil, date: Date(), score: score, completed: true)
+        let db = await LocalDatabase.shared
+        
         Just(session)
             .subscribe(on: DispatchQueue.global(qos: .userInitiated))
             .tryMap { [self] session -> Int64 in // strong self to guarantee db save
+                // Save game session and guesses to the database
                 let savedSession = try db.saveGameSession(session)
                 guard let savedSessionId = savedSession.id else {
                     throw GameDBError(message: "Failed to get saved session id")
@@ -149,17 +149,18 @@ class GameViewModel: ObservableObject {
                 return savedSessionId
             }
             .flatMap { [weak self] (savedSessionId: Int64) in
-                Future<Int?, Error> { promise in
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        do {
-                            let previous = try self?.db.fetchPreviousGameSession(currentSessionId: savedSessionId)
-                            promise(.success(previous?.score))
-                        } catch {
-                            promise(.failure(error))
-                        }
+                guard self != nil else {
+                    return Empty<Int?, Error>(completeImmediately: true).eraseToAnyPublisher()
+                }
+                return Future<Int?, Error> { promise in
+                    do {
+                        let previous = try db.fetchPreviousGameSession(currentSessionId: savedSessionId)
+                        promise(.success(previous?.score))
+                    } catch {
+                        promise(.failure(error))
                     }
                 }
-            }
+                .eraseToAnyPublisher()            }
             .receive(on: DispatchQueue.main) // UI
             .sink(receiveCompletion: { [weak self] completion in
                 guard let self else {
@@ -187,32 +188,5 @@ class GameViewModel: ObservableObject {
         borderColors = [Color](repeating: .clear, count: 3)
         
         askQuestion()
-    }
-    
-    // Update session and save guesses to DB
-    nonisolated func saveSessionAndGuesses(session: GameSession, flagGuesses: [FlagGuess]) {
-        do {
-            // Save updated session score
-            try db.updateGameSession(session)
-            // Save all guesses
-            try db.saveFlagGuesses(flagGuesses)
-            print("Saved session and guesses")
-        } catch {
-            print("Failed to save session: \(error)")
-        }
-    }
-    
-    // Fetch previous session for stats modal
-    func fetchPreviousSession(currentSessionId: Int64) async {
-        do {
-            let previous = try await Task.detached(priority: .userInitiated) {
-                return try self.db.fetchPreviousGameSession(currentSessionId: currentSessionId)
-            }.value
-            await MainActor.run {
-                self.previousSessionScore = previous?.score
-            }
-        } catch {
-            print("Failed to fetch previous session: \(error)")
-        }
     }
 }

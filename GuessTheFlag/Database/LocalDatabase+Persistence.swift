@@ -9,7 +9,15 @@ import Foundation
 import GRDB
 
 extension LocalDatabase {
-    static let shared: LocalDatabase = {
+    // Public async accessor
+    static var shared: LocalDatabase {
+        get async {
+            return await sharedTask.value // cached after first use
+        }
+    }
+
+    // Internal cached Task (initialized once)
+    private static let sharedTask: Task<LocalDatabase, Never> = Task.detached {
         do {
             let fileManager = FileManager.default
 
@@ -23,14 +31,10 @@ extension LocalDatabase {
             try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
 
             let databaseURL = folder.appendingPathComponent("db.sqlite")
-
-            // Use DatabaseQueue for simplicity
             let writer = try DatabaseQueue(path: databaseURL.path)
-
-            let db = try LocalDatabase(writer)
-            return db
+            return try LocalDatabase(writer)
         } catch {
             fatalError("Failed to create LocalDatabase: \(error)")
         }
-    }()
+    }
 }

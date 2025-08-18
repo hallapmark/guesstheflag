@@ -12,10 +12,6 @@ import SwiftUI
 
 @main
 struct GuessTheFlagApp: App {
-    init() {
-            _ = LocalDatabase.shared // init the db
-        }
-    
     var body: some Scene {
         WindowGroup {
             GameView()
