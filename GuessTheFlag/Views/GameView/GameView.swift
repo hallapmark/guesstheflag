@@ -13,6 +13,7 @@ struct GameView: View {
     var body: some View {
         GameContentView(viewModel: viewModel)
             .onAppear {
+                viewModel.prepareHaptics()
                 viewModel.askQuestion()
             }
     }

@@ -26,6 +26,7 @@ class GameViewModel: ObservableObject {
     let numberOfQuestions = 7
     
     private var cancellables = Set<AnyCancellable>()
+    private let haptics = UINotificationFeedbackGenerator()
     
     // MARK: - Published properties that affect the UI
     @Published var countries: [String] = COUNTRIES.shuffled()
@@ -49,6 +50,10 @@ class GameViewModel: ObservableObject {
     @Published var offsetAmount = [CGFloat](repeating: 0, count: 3)
     
     @Published var previousSessionScore: Int? = nil
+    
+    func prepareHaptics() {
+        haptics.prepare()
+    }
     
     func flagTapped(_ number: Int) {
         guard !gameOver else { return }
@@ -109,8 +114,7 @@ class GameViewModel: ObservableObject {
     }
     
     func giveHapticFeedback(correct: Bool) {
-        UINotificationFeedbackGenerator()
-            .notificationOccurred(correct ? .success : .error)
+        haptics.notificationOccurred(correct ? .success : .error)
     }
     
     func askQuestion() {
