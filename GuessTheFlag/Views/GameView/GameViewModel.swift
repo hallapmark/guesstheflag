@@ -145,7 +145,7 @@ class GameViewModel: ObservableObject {
                 guard let savedSessionId = savedSession.id else {
                     throw GameDBError(message: "Failed to get saved session id")
                 }
-                // Map in-memory guesses to DB guesses with session id
+                // Save in-memory guesses to the DB (id created upon insert)
                 let guessesToSave = flagGuesses.map { guess in
                     FlagGuess(id: nil, country: guess.country, wasCorrect: guess.wasCorrect, gameSessionId: savedSessionId)
                 }
@@ -153,6 +153,8 @@ class GameViewModel: ObservableObject {
                 return savedSessionId
             }
             .flatMap { [weak self] (savedSessionId: Int64) in
+                // Switching to weak self from here on
+                // for UI updates (i.e. check that we still have the view)
                 guard self != nil else {
                     return Empty<Int?, Error>(completeImmediately: true).eraseToAnyPublisher()
                 }
@@ -173,6 +175,7 @@ class GameViewModel: ObservableObject {
                 if case .failure(let error) = completion {
                     print("Failed to save session or guesses: \(error)")
                 }
+                // Current session saved, previous session fetched. Show comparison stats modal
                 self.showStatsModal = true
             }, receiveValue: { [weak self] previousScore in
                 self?.previousSessionScore = previousScore
