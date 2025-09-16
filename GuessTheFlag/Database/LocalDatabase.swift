@@ -26,12 +26,7 @@ struct LocalDatabase {
     // MARK: WRITE
     func saveGameSession(_ session: GameSession) throws -> GameSession {
         try writer.write { db in
-            var mutableSession = session
-            try mutableSession.insert(db)
-            guard let _ = mutableSession.id else {
-                throw DatabaseError(message: "Failed to get inserted GameSession id")
-            }
-            return mutableSession
+            return try session.inserted(db) // returns GameSession with the db-created id
         }
     }
     

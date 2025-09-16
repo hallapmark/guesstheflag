@@ -12,7 +12,7 @@ import Foundation
 
 // Entity model – 1-on-1 mapping to the SQL schema (see Migrator)
 struct GameSession: Codable {
-    var id: Int64? = nil
+    var id: Int64? = nil // auto-incremented id created upon insertion to the db
     var date: Date
     var score: Int
     var completed: Bool = false
