@@ -5,7 +5,7 @@
 //  Created by Mark Hallap on 2025-08-03.
 //
 
-import SwiftUICore
+import SwiftUI
 
 struct BlinkViewModifier: ViewModifier {
     // From Priyanka Saroha
